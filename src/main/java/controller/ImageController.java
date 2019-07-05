@@ -2,6 +2,7 @@ package controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,5 +23,4 @@ public class ImageController {
     public byte[] generateImage(@RequestBody RequestDTO requestDto) {
         return imageService.generateImage(requestDto);
     }
-
 }

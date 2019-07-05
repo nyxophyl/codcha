@@ -1,10 +1,25 @@
 package data;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
 public class RequestDTO {
+	@Min(value = 1)
+	@NotNull
 	Integer utmZone;
+
+	@NotNull
 	String latitudeBand;
+
+	@NotNull
 	String gridSquare;
+
+	@Pattern(regexp = "[1-2][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]")
+	@NotNull
 	String date;
+
+	@NotNull
 	String channelMap;
 
 	public RequestDTO () {
