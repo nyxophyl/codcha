@@ -3,47 +3,57 @@ package helper;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-import org.apache.commons.io.filefilter.WildcardFileFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import exc.ImageNotFoundException;
 
 @Component
 public class ImageHandler {
-	private final static String IMAGES_PATH_NAME = "images";
+	public static final int RED_INDEX = 0;
+	public static final int GREEN_INDEX = 1;
+	public static final int BLUE_INDEX = 2;
+
+	@Autowired
+	private FileSelector fileSelector;
 
 	public byte[] getJPGByFilenames(String[] rgbFilenames) {
-		File[] rgbFiles = getRGBFiles(rgbFilenames);
+		File[] rgbFiles = fileSelector.getRGBFiles(rgbFilenames);
 		BufferedImage[] rgbBufferedImages = getBufferedImages(rgbFiles);
 		return composeJPG(rgbBufferedImages);
 	}
 
+	/**
+	 * This method generates the RGB jpg image from the given buffered images.
+	 * For this, the lowest byte of each rgb information of the buffered images
+	 * will be used for the certain color information. This can be done, because
+	 * the higher two bytes of the rgb integers hold the same value.
+	 * @param rgbBufferedImages the buffered images for RGB
+	 * @return the jpg image as byte array
+	 */
 	private byte[] composeJPG(BufferedImage[] rgbBufferedImages) {
 		// blue (index 2) is always available
-		int width = rgbBufferedImages[2].getWidth();
-		int height = rgbBufferedImages[2].getHeight();
+		int width = rgbBufferedImages[BLUE_INDEX].getWidth();
+		int height = rgbBufferedImages[BLUE_INDEX].getHeight();
 		BufferedImage rgbImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		int alpha = 0xFF;
 		for (int x = 0; x < width; x++) {
 			for(int y = 0; y < height; y++) {
-				int red = rgbBufferedImages[0] != null ? rgbBufferedImages[0].getRGB(x, y) & 0xFF : 0;
-				int green = rgbBufferedImages[1] != null ? rgbBufferedImages[1].getRGB(x, y) & 0xFF : 0;
-				int blue = rgbBufferedImages[2].getRGB(x, y) & 0xFF;
+				int red = rgbBufferedImages[RED_INDEX] != null ? rgbBufferedImages[RED_INDEX].getRGB(x, y) & 0xFF : 0;
+				int green = rgbBufferedImages[GREEN_INDEX] != null ? rgbBufferedImages[GREEN_INDEX].getRGB(x, y) & 0xFF : 0;
+				int blue = rgbBufferedImages[BLUE_INDEX].getRGB(x, y) & 0xFF;
 				rgbImage.setRGB(x, y, (alpha << 24) | (red << 16) | (green << 8) | blue);
 			}
 		}
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 		byte[] imageByteArray;
-		try {
+		try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 			ImageIO.write( rgbImage, "jpg", byteArrayOutputStream );
 			byteArrayOutputStream.flush();
 			imageByteArray = byteArrayOutputStream.toByteArray();
-			byteArrayOutputStream.close();
 		} catch (IOException e) {
 			throw new ImageNotFoundException("Output image could not be created.");
 		}
@@ -62,22 +72,5 @@ public class ImageHandler {
 			}
 		}
 		return bufferedImages;
-	}
-
-	private File[] getRGBFiles(String[] rgbFilenames) {
-		File[] rgbFiles = new File[rgbFilenames.length];
-		File dir = new File(IMAGES_PATH_NAME);
-		for(int i = 0; i < rgbFilenames.length; i++) {
-			if(rgbFilenames[i] != null) {
-				FileFilter fileFilter = new WildcardFileFilter(rgbFilenames[i]);
-				File[] files = dir.listFiles(fileFilter);
-				if(files.length > 0) {
-					rgbFiles[i] = files[0];
-				} else {
-					throw new ImageNotFoundException("Image(s) for given parameter not available.");
-				}
-			}
-		}
-		return rgbFiles;
 	}
 }

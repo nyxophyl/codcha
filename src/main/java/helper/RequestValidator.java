@@ -35,7 +35,7 @@ public class RequestValidator {
 		try {
 			ChannelMap.valueOf(requestDto.getChannelMap());
 		}
-		catch(Exception e) {
+		catch(IllegalArgumentException e) {
 			throw new ImageNotFoundException("Parameter channelMap only allows following values: 'visible', 'vegatation' and 'waterVapor'");
 		}
 	}
