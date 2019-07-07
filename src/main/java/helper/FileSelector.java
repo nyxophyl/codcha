@@ -10,7 +10,7 @@ import exc.ImageNotFoundException;
 
 @Component
 public class FileSelector {
-	private final static String IMAGES_PATH_NAME = "images";
+	public final static String IMAGES_PATH_NAME = "images";
 
 	public File[] getRGBFiles(String[] rgbFilenames) {
 		File[] rgbFiles = new File[rgbFilenames.length];
@@ -20,6 +20,7 @@ public class FileSelector {
 				FileFilter fileFilter = new WildcardFileFilter(rgbFilenames[i]);
 				File[] files = dir.listFiles(fileFilter);
 				if(files.length > 0) {
+					// assume, that only one file (for each day) is available, otherwise this may not work!
 					rgbFiles[i] = files[0];
 				} else {
 					throw new ImageNotFoundException("Image(s) for given parameter not available.");
